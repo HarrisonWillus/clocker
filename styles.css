@@ -131,8 +131,8 @@ html {
 #dropdown-display {
     position: absolute;
     margin: 0;
-    top: 7rem;
-    right: .2rem;
+    top: 5rem;
+    right: -1rem;
     transition: all 0.3s ease;
     max-height: 152px;
     overflow-y: auto;
@@ -141,6 +141,8 @@ html {
     width: 218px;
     pointer-events: none;
     list-style: none;
+    border-radius: 2rem;
+    padding: 0.5rem 0;
 
     font-family: 'Roboto Condensed', sans-serif;
     font-size: 1rem;

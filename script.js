@@ -3,7 +3,6 @@ let currentTimer;      // Stores the timer for background color changes
 let currentInterval;   // Stores the interval for time updates
 
 // Array of time zones with their IANA names
-// This serves as the initial list before fetching from the API
 let timeZones = [
     {zoneName: "America/New_York"},
     {zoneName: "America/Chicago"},
@@ -50,86 +49,22 @@ let themes = [
 ];
 
 /**
- * Starts a timer that triggers background color changes at specified intervals
- * @param {number} duration - The interval duration in seconds
+ * Helper function to format time zone names for display
+ * @param {string} zoneName - The raw time zone name
+ * @returns {string} Formatted time zone name
  */
-function startTimer(duration) {
-    // Clear any existing interval to prevent multiple timers
-    if (currentTimer) {
-        clearInterval(currentTimer);
-    }
-    
-    let timer = duration;
-    currentTimer = setInterval(function () {
-        let seconds = parseInt(timer % 60, 10);
-        seconds = seconds < 10 ? "0" + seconds : seconds; // Add leading zero if needed
-
-        if (--timer < 0) {
-            getColor();           // Change background color
-            timer = duration;     // Reset the timer
-        }
-    }, 1000);
+function formatTimeZoneName(zoneName) {
+    return zoneName.replace("/", ", ").replace("_", " ");
 }
 
 /**
- * Fetches all available time zones and updates the UI
- * @param {string} timeZone - The currently selected time zone
+ * Helper function to close all menus
  */
-async function updateTime(timeZone) {
-    try {
-        // Fetch all time zones from the World Time API
-        const response = await fetch('http://worldtimeapi.org/api/timezone');
-        const allTimeZones = await response.json();
-        
-        // Update the global timeZones array with fetched data
-        timeZones = allTimeZones.map(zoneName => ({ zoneName }));
-        
-        // Update the zones list in the UI with formatted zone names
-        const showZoneOptions = timeZones.map((zoneIndex) => {
-            let textZoneName = zoneIndex.zoneName.replace("/", ", ").replace("_", " ");
-            return `<li id="zone-option">${textZoneName}</li>`;
-        }).join("");
-        document.querySelector(".zones").innerHTML = showZoneOptions;
-        
-        // Re-attach event listeners to the new zone options
-        const zoneOptions = document.querySelectorAll("#zone-option");
-        zoneOptions.forEach((option) => {
-            option.addEventListener('click', function() {
-                let newTimeZone;
-                const selectedText = this.textContent;
-                
-                // Find the selected time zone in our array
-                for (let i = 0; i < timeZones.length; i++) {
-                    const formattedZone = timeZones[i].zoneName.replace("/", ", ").replace("_", " ");
-                    if (selectedText === formattedZone) {
-                        newTimeZone = timeZones[i].zoneName;
-                        break;
-                    }
-                }
-                
-                // Update the display if a valid time zone was selected
-                if (newTimeZone) {
-                    document.getElementById("current-time-zone").textContent = newTimeZone.replace("/", ", ").replace("_", " ");
-                    clearInterval(currentInterval);
-                    currentInterval = setInterval(() => updateTime(newTimeZone), 1000);
-                    updateTimeDisplay(newTimeZone);
-                }
-                
-                // Close all menus after selection
-                document.querySelector(".hamburger-menu").classList.remove("active");
-                document.querySelector(".hamburger-menu-nav").classList.remove("active");
-                document.querySelector(".zones").classList.remove("active");
-                document.querySelector(".themes").classList.remove("active");
-            });
-        });
-        
-        // Update the time display for the current time zone
-        updateTimeDisplay(timeZone);
-    } catch (error) {
-        console.error('Error fetching time zones:', error);
-        // Fallback to just updating the time display if API call fails
-        updateTimeDisplay(timeZone);
-    }
+function closeAllMenus() {
+    document.querySelector(".hamburger-menu").classList.remove("active");
+    document.querySelector(".hamburger-menu-nav").classList.remove("active");
+    document.querySelector(".zones").classList.remove("active");
+    document.querySelector(".themes").classList.remove("active");
 }
 
 /**
@@ -151,18 +86,44 @@ function updateTimeDisplay(timeZone) {
 }
 
 /**
+ * Updates the time zone display and starts the time update interval
+ * @param {string} newTimeZone - The time zone to switch to
+ */
+function switchTimeZone(newTimeZone) {
+    document.getElementById("current-time-zone").textContent = formatTimeZoneName(newTimeZone);
+    clearInterval(currentInterval);
+    currentInterval = setInterval(() => updateTimeDisplay(newTimeZone), 1000);
+    updateTimeDisplay(newTimeZone);
+}
+
+/**
+ * Starts a timer that triggers background color changes at specified intervals
+ * @param {number} duration - The interval duration in seconds
+ */
+function startTimer(duration) {
+    if (currentTimer) {
+        clearInterval(currentTimer);
+    }
+    
+    let timer = duration;
+    currentTimer = setInterval(function () {
+        if (--timer < 0) {
+            getColor();           // Change background color
+            timer = duration;     // Reset the timer
+        }
+    }, 1000);
+}
+
+/**
  * Generates a random color and updates the background with a smooth transition
  */
 async function getColor() {
     try {
-        // Generate random hex color
         const randomHex = Math.floor(Math.random()*16777215).toString(16);
-        // Get color information from the Color API
         const response = await fetch(`https://www.thecolorapi.com/id?hex=${randomHex}`);
         const data = await response.json();
         const pickedColor = data.hex.value;
     
-        // Apply the new color with a transition effect
         document.body.style.transition = "background-color 3s";
         document.body.style.backgroundColor = pickedColor;
     } catch (error) {
@@ -170,124 +131,93 @@ async function getColor() {
     }
 }
 
-/**
- * Initialize the application when the page loads
- */
+// Initialize the application when the page loads
 window.onload = function () {
-    let duration = 10; // Duration between color changes (in seconds)
     // Initialize background color and timer
     getColor();
-    startTimer(duration);
+    startTimer(10);
 
-    // Get and display the user's local time zone
-    startingTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    document.getElementById("current-time-zone").textContent = startingTimeZone.replace("/", ", ").replace("_", " ");
+    // Set up initial time zone
+    const startingTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    switchTimeZone(startingTimeZone);
 
-    // Start updating the time display
-    currentInterval = setInterval(() => updateTime(startingTimeZone), 1000);
-    updateTime(startingTimeZone);
+    // Set up UI event listeners
+    setupEventListeners();
 };
 
-// Event Listeners for UI Navigation
-
-// Toggle hamburger menu
-document.querySelector(".hamburger-menu").addEventListener('click', function(){
-    const hamburgerMenu = document.querySelector(".hamburger-menu");
-    const navMenu = document.querySelector(".hamburger-menu-nav");
-    
-    hamburgerMenu.classList.toggle("active");
-    navMenu.classList.toggle("active");
-
-    // Reset other menus when closing hamburger menu
-    if (!navMenu.classList.contains("active")) {
-        document.querySelector(".zones").classList.remove("active");
-        document.querySelector(".themes").classList.remove("active");
-    }
-});
-
-// Toggle time display visibility
-document.getElementById("time").addEventListener('click', function(){
-    document.getElementById("time-display").classList.toggle("active");
-    document.querySelector(".hamburger-menu").classList.remove("active");
-    document.querySelector(".hamburger-menu-nav").classList.remove("active");
-});
-
-// Toggle time zones menu
-document.getElementById("zone").addEventListener('click', function(){
-    document.querySelector(".zones").classList.toggle("active");
-    document.querySelector(".themes").classList.remove("active");
-});
-
-// Toggle themes menu
-document.getElementById("theme").addEventListener('click', function(){
-    document.querySelector(".themes").classList.toggle("active");
-    document.querySelector(".zones").classList.remove("active");
-});
-
-// Initialize UI Elements
-
-// Populate time zones dropdown
-const showZoneOptions = timeZones.map((zoneIndex) => {
-    let textZoneName = zoneIndex.zoneName.replace("/", ", ").replace("_", " ");
-    return `<li id="zone-option">${textZoneName}</li>`;
-}).join("");
-document.querySelector(".zones").innerHTML = showZoneOptions;
-
-// Populate themes dropdown
-const showThemeOptions = themes.map((themeIndex) => {
-    return `<li id="theme-option">${themeIndex.theme}</li>`;
-}).join("");
-document.querySelector(".themes").innerHTML = showThemeOptions;
-
-// Event Handlers for Time Zone Selection
-
-// Get all timezone option elements
-const zoneOptions = document.querySelectorAll("#zone-option");
-
-// Add click handler to each time zone option
-zoneOptions.forEach((option) => {
-    option.addEventListener('click', function() {
-        let newTimeZone;
-        const selectedText = this.textContent;
-
-        // Find the selected time zone
-        for (let i = 0; i < timeZones.length; i++) {
-            const formattedZone = timeZones[i].zoneName.replace("/", ", ").replace("_", " ");
-            if (selectedText === formattedZone) {
-                newTimeZone = timeZones[i].zoneName;
-                break;
-            }
-        }
-
-        // Update the display if a valid time zone was selected
-        if (newTimeZone) {
-            document.getElementById("current-time-zone").textContent = newTimeZone.replace("/", ", ").replace("_", " ");
-            clearInterval(currentInterval);
-            currentInterval = setInterval(() => updateTime(newTimeZone), 1000);
-            updateTime(newTimeZone);
-        }
+/**
+ * Set up all event listeners for the UI
+ */
+function setupEventListeners() {
+    // Hamburger menu toggle
+    document.querySelector(".hamburger-menu").addEventListener('click', function() {
+        const hamburgerMenu = document.querySelector(".hamburger-menu");
+        const navMenu = document.querySelector(".hamburger-menu-nav");
         
-        // Close all menus after selection
-        document.querySelector(".hamburger-menu").classList.remove("active");
-        document.querySelector(".hamburger-menu-nav").classList.remove("active");
-        document.querySelector(".zones").classList.remove("active");
+        hamburgerMenu.classList.toggle("active");
+        navMenu.classList.toggle("active");
+
+        if (!navMenu.classList.contains("active")) {
+            document.querySelector(".zones").classList.remove("active");
+            document.querySelector(".themes").classList.remove("active");
+        }
+    });
+
+    // Time display toggle
+    document.getElementById("time").addEventListener('click', function() {
+        document.getElementById("time-display").classList.toggle("active");
+        closeAllMenus();
+    });
+
+    // Time zones menu toggle
+    document.getElementById("zone").addEventListener('click', function() {
+        document.querySelector(".zones").classList.toggle("active");
         document.querySelector(".themes").classList.remove("active");
     });
-});
 
-// Event Handlers for Theme Selection
-
-// Get all theme option elements
-const themeOptions = document.querySelectorAll("#theme-option");
-
-// Add click handler to each theme option
-themeOptions.forEach(option => {
-    option.addEventListener('click', function() {
-        // Close all menus after selection
-        document.querySelector(".hamburger-menu").classList.remove("active");
-        document.querySelector(".hamburger-menu-nav").classList.remove("active");
+    // Themes menu toggle
+    document.getElementById("theme").addEventListener('click', function() {
+        document.querySelector(".themes").classList.toggle("active");
         document.querySelector(".zones").classList.remove("active");
-        document.querySelector(".themes").classList.remove("active");
-        document.querySelector(".hamburger-menu-nav").classList.remove("active");
     });
-});
+
+    // Initialize dropdowns
+    setupDropdowns();
+}
+
+/**
+ * Set up time zone and theme dropdowns
+ */
+function setupDropdowns() {
+    // Populate time zones dropdown
+    const showZoneOptions = timeZones.map(zone => 
+        `<li id="zone-option">${formatTimeZoneName(zone.zoneName)}</li>`
+    ).join("");
+    document.querySelector(".zones").innerHTML = showZoneOptions;
+
+    // Populate themes dropdown
+    const showThemeOptions = themes.map(theme => 
+        `<li id="theme-option">${theme.theme}</li>`
+    ).join("");
+    document.querySelector(".themes").innerHTML = showThemeOptions;
+
+    // Add click handlers to time zone options
+    document.querySelectorAll("#zone-option").forEach(option => {
+        option.addEventListener('click', function() {
+            const selectedText = this.textContent;
+            const newTimeZone = timeZones.find(tz => 
+                formatTimeZoneName(tz.zoneName) === selectedText
+            )?.zoneName;
+
+            if (newTimeZone) {
+                switchTimeZone(newTimeZone);
+            }
+            closeAllMenus();
+        });
+    });
+
+    // Add click handlers to theme options
+    document.querySelectorAll("#theme-option").forEach(option => {
+        option.addEventListener('click', closeAllMenus);
+    });
+}
