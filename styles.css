@@ -218,3 +218,34 @@ html {
 #dropdown-display > label {
     padding-left: 1rem;
 }
+
+#hour-format-hover {
+    width: 0;
+    height: 35px;
+    padding: .5rem 1rem;
+    border-radius: 2rem;
+    background-color: #fff;
+    position: absolute;
+    opacity: 0;
+    right: 2.5rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: 'Roboto Condensed', sans-serif;
+    letter-spacing: 0.1rem;
+    z-index: -1;
+}
+
+#hour-format-hover.active {
+    opacity: 1;
+    width: 135px;
+    padding-right: 3rem;
+}
+
+#hour-format {
+    transition: all 0.3s ease;
+}
+
+#hour-format.active {
+    transform: rotate(180deg);
+}

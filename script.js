@@ -1,6 +1,8 @@
 let currentTimer;
 let currentInterval;
 let timeZoneInput = "";
+let currentHourFormat;
+let currentTimeZone;
 let timeZones = [
     {zoneName: "America/New_York"},
     {zoneName: "America/Chicago"},
@@ -62,15 +64,15 @@ function startTimer(duration) {
     }, 1000);
 }
 
-function updateTime(timeZone) {
+function updateTime(timeZone, hourFormat) {
     const now = new Date();
-    let currentTimeZone = timeZone;
+    let selectedTimeZone = timeZone;
     const timeString = now.toLocaleTimeString([], { 
-        timeZone: currentTimeZone,
+        timeZone: selectedTimeZone,
         hour: '2-digit', 
         minute: '2-digit', 
         second: '2-digit', 
-        hourCycle: 'h24'
+        hourCycle: hourFormat ? 'h24' : 'h12'
     })
     document.getElementById('time-display').textContent = timeString;
     return timeString;
@@ -98,42 +100,48 @@ window.onload = function () {
     getColor();
     startTimer(duration);
 
-    startingTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    document.getElementById("current-time-zone").textContent = startingTimeZone.replace("/", ", ").replace("_", " ");
+    currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (Intl.DateTimeFormat().resolvedOptions().hourCycle === 'h12') {
+        currentHourFormat = false;
+    } else {
+        currentHourFormat = true;
+    }
+    document.getElementById("current-time-zone").textContent = currentTimeZone.replace("/", ", ").replace("_", " ");
 
-    currentInterval = setInterval(() => updateTime(startingTimeZone), 1000); // Update every second
-    updateTime(startingTimeZone);
+    currentInterval = setInterval(() => updateTime(currentTimeZone, currentHourFormat), 1000); // Update every second
+    updateTime(currentTimeZone, currentHourFormat);
 };
 
 function addTimeZone(timeZone) {
-    console.log(timeZone);
+    currentTimeZone = timeZone;
+    console.log(currentTimeZone);
     switch (true) {
-        case timeZone === "" || timeZone.includes(", "):
+        case currentTimeZone === "" || timeZone.includes(", "):
             timeZoneInput = "";
             document.querySelector("#add-zone-input").value = "";
             throw new Error("Time zone could not be added");
-        case timeZone === timeZones.zoneName:
+        case currentTimeZone === timeZones.zoneName:
             timeZoneInput = "";
             document.querySelector("#add-zone-input").value = "";
             throw new Error("Time zone already exists");
-        case timeZone.includes(" "):
+        case currentTimeZone.includes(" "):
             timeZone = timeZone.replace(" ", "_");
             break;
-        case timeZone.includes(","):
+        case currentTimeZone.includes(","):
             timeZone = timeZone.replace(",", "/");
             break;
     }
     console.log(timeZone);
 
     try {
-        document.getElementById("current-time-zone").textContent = timeZone.replace("/", ", ").replace("_", " ");
+        document.getElementById("current-time-zone").textContent = currentTimeZone.replace("/", ", ").replace("_", " ");
         clearInterval(currentInterval);
-        currentInterval = setInterval(() => updateTime(timeZone), 1000);
-        updateTime(timeZone);
+        currentInterval = setInterval(() => updateTime(currentTimeZone, currentHourFormat), 1000);
+        updateTime(currentTimeZone, currentHourFormat);
         timeZoneInput = "";
         document.querySelector("#add-zone-input").value = "";
     } catch (error) {
-        console.log("Time zone could not be added: ", error);
+        console.log("The time zone " + currentTimeZone + " could not be added: ", error);
     }
 };
 
@@ -153,10 +161,7 @@ document.querySelector(".hamburger-menu").addEventListener('click', function(){
 
 document.getElementById("time").addEventListener('click', function(){
     document.getElementById("time-display").classList.toggle("active");
-    document.querySelector(".hamburger-menu").classList.remove("active");
-    document.querySelector(".hamburger-menu-nav").classList.remove("active");
-    
-    document.querySelector(".hamburger-menu-nav").classList.remove("active");
+    closeAllMenus();
 });
 
 document.getElementById("zone").addEventListener('click', function(){
@@ -183,7 +188,7 @@ function changeTimeZoneInput(e) {
 document.querySelector("#add-zone-input").addEventListener('input', changeTimeZoneInput);
 // {zoneName: "Europe/Prague"}
 
-document.querySelector("#add-zone-btn").addEventListener('click', () => addTimeZone(timeZoneInput));
+document.querySelector("#add-zone-btn").addEventListener('click', () => {addTimeZone(timeZoneInput); closeAllMenus();});
 
 const showThemeOptions = themes.map((themeIndex) => {
     return `<li id="theme-option">${themeIndex.theme}</li>`;
@@ -196,31 +201,52 @@ const zoneOptions = document.querySelectorAll("#zone-option");
 // Add click handler to each option
 zoneOptions.forEach((option) => {
     option.addEventListener('click', function() {
-        let newTimeZone;
         const selectedText = this.textContent;
 
         for (let i = 0; i < timeZones.length; i++) {
             const formattedZone = timeZones[i].zoneName.replace("/", ", ").replace("_", " ");
             if (selectedText === formattedZone) {
-                newTimeZone = timeZones[i].zoneName;
+                currentTimeZone = timeZones[i].zoneName;
                 break;
             }
         }
 
-        if (newTimeZone) {
-            document.getElementById("current-time-zone").textContent = newTimeZone.replace("/", ", ").replace("_", " ");
+        if (currentTimeZone) {
+            document.getElementById("current-time-zone").textContent = currentTimeZone.replace("/", ", ").replace("_", " ");
             // Clear existing interval and start new one with selected timezone
             clearInterval(currentInterval);
-            currentInterval = setInterval(() => updateTime(newTimeZone), 1000);
-            updateTime(newTimeZone);
+            currentInterval = setInterval(() => updateTime(currentTimeZone, currentHourFormat), 1000);
+            updateTime(currentTimeZone, currentHourFormat);
         }
         
         // Close all menus
-        document.querySelector(".hamburger-menu").classList.remove("active");
-        document.querySelector(".hamburger-menu-nav").classList.remove("active");
-        document.querySelector(".zones").classList.remove("active");
-        document.querySelector(".themes").classList.remove("active");
+        closeAllMenus();
     });
+});
+
+document.getElementById("hour-format").addEventListener('click', function(){
+    document.getElementById("hour-format").classList.toggle("active");
+    document.getElementById("hour-format-hover").classList.remove("active");
+
+    currentHourFormat = !currentHourFormat;
+    clearInterval(currentInterval);
+    currentInterval = setInterval(() => updateTime(currentTimeZone, currentHourFormat), 1000);
+    updateTime(currentTimeZone, currentHourFormat);
+
+    closeAllMenus();
+});
+
+document.getElementById("hour-format").addEventListener('mouseover', function(){
+    document.getElementById("hour-format-hover").classList.add("active");
+    
+    setTimeout(() => {
+        document.getElementById("hour-format").classList.contains("active") ? document.getElementById("hour-format-hover").textContent = `12-hour` : document.getElementById("hour-format-hover").textContent = `24-hour`;
+    }, 250);
+});
+
+document.getElementById("hour-format").addEventListener('mouseout', function(){
+    document.getElementById("hour-format-hover").classList.remove("active");
+    document.getElementById("hour-format-hover").textContent = "";
 });
 
 // Get all theme option elements
@@ -237,3 +263,11 @@ themeOptions.forEach(option => {
         document.querySelector(".hamburger-menu-nav").classList.remove("active");
     });
 });
+
+function closeAllMenus() {
+    document.querySelector(".hamburger-menu").classList.remove("active");
+    document.querySelector(".hamburger-menu-nav").classList.remove("active");
+    document.querySelector(".zones").classList.remove("active");
+    document.querySelector(".themes").classList.remove("active");
+    document.getElementById("hour-format-hover").classList.remove("active");
+}
