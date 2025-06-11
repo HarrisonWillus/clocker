@@ -131,14 +131,13 @@ html {
 #dropdown-display {
     position: absolute;
     margin: 0;
-    top: 7rem;
-    right: .2rem;
+    top: 5rem;
     transition: all 0.3s ease;
     max-height: 152px;
     overflow-y: auto;
     background-color: #fff;
     opacity: 0;
-    width: 218px;
+    width: fit-content;
     pointer-events: none;
     list-style: none;
 
@@ -148,19 +147,29 @@ html {
     letter-spacing: 0.1rem;
 }
 
+.zones {
+    right: -1.7rem;
+    padding-top: .5rem;
+}
+
+.themes {
+    right: 2.2rem;
+    padding: .5rem 1rem
+}
+
 #dropdown-display.active {
     opacity: 1;
     pointer-events: auto;
     transform: translate(-50%, 0);
 }
 
-#dropdown-display li {
+#dropdown-display > #zone-option {
     padding: 0.5rem 1rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
-#dropdown-display li:hover {
+#dropdown-display > #zone-option:hover, #add-zone > input:hover {
     background-color: #f5f5f5;
 }
 
@@ -174,4 +183,38 @@ html {
     letter-spacing: 0.1rem;
     text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
     pointer-events: none;
+}
+
+#add-zone {
+    display: flex;
+    gap: .7rem;
+    cursor: default;
+    padding: 0;
+}
+
+#add-zone > input {
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: 'Roboto Condensed', sans-serif;
+    letter-spacing: 0.1rem;
+    padding: 0.5rem 1rem;
+}
+
+#add-zone > button {
+    border: none;
+    border-radius: 2rem;
+    background-color: #000;
+    color: #fff;
+    padding: 0.2rem .5rem;
+    cursor: pointer;
+    margin: .5rem 1rem .5rem 0;
+}
+
+#add-zone > button:hover {
+    color: green;
+}
+
+#dropdown-display > label {
+    padding-left: 1rem;
 }

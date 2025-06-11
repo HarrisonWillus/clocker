@@ -1,5 +1,6 @@
 let currentTimer;
 let currentInterval;
+let timeZoneInput = "";
 let timeZones = [
     {zoneName: "America/New_York"},
     {zoneName: "America/Chicago"},
@@ -104,13 +105,37 @@ window.onload = function () {
     updateTime(startingTimeZone);
 };
 
-// function checkLunchTime() {
-//     const currentTime = updateTime();
-//     if (currentTime === '12:00:00') {
-//         alert("Its lunch Time!");
-//     }
-// }
-// setInterval(checkLunchTime);
+function addTimeZone(timeZone) {
+    console.log(timeZone);
+    switch (true) {
+        case timeZone === "" || timeZone.includes(", "):
+            timeZoneInput = "";
+            document.querySelector("#add-zone-input").value = "";
+            throw new Error("Time zone could not be added");
+        case timeZone === timeZones.zoneName:
+            timeZoneInput = "";
+            document.querySelector("#add-zone-input").value = "";
+            throw new Error("Time zone already exists");
+        case timeZone.includes(" "):
+            timeZone = timeZone.replace(" ", "_");
+            break;
+        case timeZone.includes(","):
+            timeZone = timeZone.replace(",", "/");
+            break;
+    }
+    console.log(timeZone);
+
+    try {
+        document.getElementById("current-time-zone").textContent = timeZone.replace("/", ", ").replace("_", " ");
+        clearInterval(currentInterval);
+        currentInterval = setInterval(() => updateTime(timeZone), 1000);
+        updateTime(timeZone);
+        timeZoneInput = "";
+        document.querySelector("#add-zone-input").value = "";
+    } catch (error) {
+        console.log("Time zone could not be added: ", error);
+    }
+};
 
 document.querySelector(".hamburger-menu").addEventListener('click', function(){
     const hamburgerMenu = document.querySelector(".hamburger-menu");
@@ -150,7 +175,15 @@ const showZoneOptions = timeZones.map((zoneIndex) => {
     let textZoneName = zoneIndex.zoneName.replace("/", ", ").replace("_", " ");
     return `<li id="zone-option">${textZoneName}</li>`;
 }).join("");
-document.querySelector(".zones").innerHTML = showZoneOptions;
+document.querySelector(".zones").innerHTML = `<label for="add-zone-input">Jump to a timezone</label><li id="add-zone"><input type="text" id="add-zone-input" placeholder="eg region/city"/><button id="add-zone-btn"><i class="fa-solid fa-plus"></i></button></li>` + showZoneOptions;
+
+function changeTimeZoneInput(e) {
+    timeZoneInput = e.target.value;
+}
+document.querySelector("#add-zone-input").addEventListener('input', changeTimeZoneInput);
+// {zoneName: "Europe/Prague"}
+
+document.querySelector("#add-zone-btn").addEventListener('click', () => addTimeZone(timeZoneInput));
 
 const showThemeOptions = themes.map((themeIndex) => {
     return `<li id="theme-option">${themeIndex.theme}</li>`;
