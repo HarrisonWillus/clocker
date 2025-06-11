@@ -233,7 +233,8 @@ document.getElementById("hour-format").addEventListener('click', function(){
     currentInterval = setInterval(() => updateTime(currentTimeZone, currentHourFormat), 1000);
     updateTime(currentTimeZone, currentHourFormat);
 
-    closeAllMenus();
+    document.getElementById("hour-format-hover").classList.remove("active");
+    document.getElementById("hour-format-hover").textContent = "";
 });
 
 document.getElementById("hour-format").addEventListener('mouseover', function(){
@@ -256,11 +257,7 @@ const themeOptions = document.querySelectorAll("#theme-option");
 themeOptions.forEach(option => {
     option.addEventListener('click', function() {
         // Close all menus
-        document.querySelector(".hamburger-menu").classList.remove("active");
-        document.querySelector(".hamburger-menu-nav").classList.remove("active");
-        document.querySelector(".zones").classList.remove("active");
-        document.querySelector(".themes").classList.remove("active");
-        document.querySelector(".hamburger-menu-nav").classList.remove("active");
+        closeAllMenus();
     });
 });
 
