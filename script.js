@@ -78,6 +78,23 @@ function updateTime(timeZone, hourFormat) {
     return timeString;
 }
 
+function changeView() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    // Detect if device is in portrait mode or small screen
+    const isPortrait = windowHeight > windowWidth;
+    const isSmallScreen = windowWidth < 768;
+    if (isSmallScreen || isPortrait) {
+        document.getElementById("main").style.display = "none";
+        document.getElementById("wrong").style.display = "flex";
+        return true;
+    } else {
+        document.getElementById("main").style.display = "block";
+        document.getElementById("wrong").style.display = "none";
+        return false;
+    }
+}
+
 async function getColor() {
     try {
         let prevColor = document.body.style.backgroundColor;
@@ -95,6 +112,8 @@ async function getColor() {
 };
 
 window.onload = function () {
+    if (changeView()) return;
+    
     let duration = 10; //sets the duration of the timer to 10 seconds
     // Start timer and get initial color on page load
     getColor();
@@ -111,6 +130,9 @@ window.onload = function () {
     currentInterval = setInterval(() => updateTime(currentTimeZone, currentHourFormat), 1000); // Update every second
     updateTime(currentTimeZone, currentHourFormat);
 };
+
+window.addEventListener('resize', changeView);
+window.addEventListener('orientationchange', changeView);
 
 function addTimeZone(timeZone) {
     currentTimeZone = timeZone;
