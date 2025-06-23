@@ -2,6 +2,24 @@
 
 Clocker is a modern, interactive web application that displays time across different time zones with a beautiful, color-changing background. It's a perfect tool for anyone who needs to keep track of time across multiple regions or just wants a visually appealing clock interface.
 
+---
+
+## Table of Contents
+- [Features](#features)
+- [Technical Details](#technical-details)
+- [File Structure](#file-structure)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [Browser Support](#browser-support)
+- [Dependencies](#dependencies)
+- [FAQ / Troubleshooting](#faq--troubleshooting)
+- [Contributing](#contributing)
+- [Screenshots](#screenshots)
+- [Credits](#credits)
+- [License](#license)
+
+---
+
 ## Features
 
 - **Real-time Clock Display**: Shows current time in 24-hour format with seconds
@@ -53,6 +71,17 @@ The application is built with vanilla JavaScript and follows these design princi
    - Integration with the Color API
    - Smooth background transitions
 
+## File Structure
+
+```
+clocker/
+├── index.html        # Main HTML file, entry point for the app
+├── script.js         # Main JavaScript logic for time, UI, and color features
+├── styles.css        # Styling and responsive design
+├── favicon.png       # App icon
+├── README.md         # Documentation (this file)
+```
+
 ## Getting Started
 
 1. Clone the repository
@@ -81,6 +110,20 @@ The application is built with pure HTML, CSS, and JavaScript. It uses:
 - Native JavaScript Date API for time zone handling
 - Modern CSS features for animations and transitions
 
+## FAQ / Troubleshooting
+
+**Q: The app doesn't display correctly on my phone?**
+A: Please use landscape mode or a desktop browser for the best experience.
+
+**Q: The background color doesn't change?**
+A: Ensure you have an active internet connection, as the app fetches colors from an external API.
+
+**Q: How do I add a custom time zone?**
+A: Use the 'Jump to a timezone' input in the time zone menu. Enter in the format `Region/City` (e.g., `Europe/Prague`).
+
+**Q: The clock is not updating?**
+A: Try refreshing the page. If the issue persists, check your browser's JavaScript settings.
+
 ## Contributing
 
 Feel free to fork this repository and submit pull requests to contribute to this project. Some areas for potential improvement:
@@ -88,6 +131,16 @@ Feel free to fork this repository and submit pull requests to contribute to this
 - More time zone features
 - Custom color schemes
 - Offline support
+
+## Screenshots
+
+*Add screenshots here to showcase the app UI. (You can add images by dragging them into this section or linking to hosted images.)*
+
+## Credits
+- [Font Awesome](https://fontawesome.com/) for icons
+- [Google Fonts](https://fonts.google.com/) for Orbitron and Roboto Condensed
+- [The Color API](https://www.thecolorapi.com/) for dynamic background colors
+- Inspired by modern clock and world time apps
 
 ## License
 

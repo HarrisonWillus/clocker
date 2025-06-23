@@ -1,3 +1,7 @@
+/**
+ * Clocker Web App Main Script
+ * Handles time display, time zone switching, dynamic backgrounds, and UI interactions.
+ */
 let currentTimer;
 let currentInterval;
 let timeZoneInput = "";
@@ -46,6 +50,11 @@ let themes = [
     {theme: "Matrix"}
 ];
 
+/**
+ * Starts a timer that triggers a callback every duration seconds.
+ * Used for background color changes.
+ * @param {number} duration - Duration in seconds
+ */
 function startTimer(duration) {
     // Clear any existing interval
     if (currentTimer) {
@@ -64,6 +73,12 @@ function startTimer(duration) {
     }, 1000);
 }
 
+/**
+ * Updates the time display for the selected time zone and format.
+ * @param {string} timeZone - IANA time zone string
+ * @param {boolean} hourFormat - true for 24-hour, false for 12-hour
+ * @returns {string} - Formatted time string
+ */
 function updateTime(timeZone, hourFormat) {
     const now = new Date();
     let selectedTimeZone = timeZone;
@@ -78,12 +93,17 @@ function updateTime(timeZone, hourFormat) {
     return timeString;
 }
 
+/**
+ * Handles responsive view changes for mobile/desktop.
+ * Hides main UI on small screens or portrait mode.
+ * @returns {boolean} - true if in portrait/small screen, false otherwise
+ */
 function changeView() {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     // Detect if device is in portrait mode or small screen
     const isPortrait = windowHeight > windowWidth;
-    const isSmallScreen = windowWidth < 768;
+    const isSmallScreen = windowWidth < 450;
     if (isSmallScreen || isPortrait) {
         document.getElementById("main").style.display = "none";
         document.getElementById("wrong").style.display = "flex";
@@ -95,6 +115,10 @@ function changeView() {
     }
 }
 
+/**
+ * Fetches a random color from The Color API and applies it as the background.
+ * Handles smooth transitions.
+ */
 async function getColor() {
     try {
         let prevColor = document.body.style.backgroundColor;
@@ -134,6 +158,10 @@ window.onload = function () {
 window.addEventListener('resize', changeView);
 window.addEventListener('orientationchange', changeView);
 
+/**
+ * Adds a new time zone to the display.
+ * @param {string} timeZone - IANA time zone string
+ */
 function addTimeZone(timeZone) {
     currentTimeZone = timeZone;
     console.log(currentTimeZone);
@@ -204,6 +232,10 @@ const showZoneOptions = timeZones.map((zoneIndex) => {
 }).join("");
 document.querySelector(".zones").innerHTML = `<label for="add-zone-input">Jump to a timezone</label><li id="add-zone"><input type="text" id="add-zone-input" placeholder="eg region/city"/><button id="add-zone-btn"><i class="fa-solid fa-plus"></i></button></li>` + showZoneOptions;
 
+/**
+ * Handles input changes for custom time zone entry.
+ * @param {Event} e - Input event
+ */
 function changeTimeZoneInput(e) {
     timeZoneInput = e.target.value;
 }
@@ -283,6 +315,9 @@ themeOptions.forEach(option => {
     });
 });
 
+/**
+ * Closes all open menus and resets UI state.
+ */
 function closeAllMenus() {
     document.querySelector(".hamburger-menu").classList.remove("active");
     document.querySelector(".hamburger-menu-nav").classList.remove("active");
