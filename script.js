@@ -51,10 +51,6 @@ let themes = [
     {theme: "Matrix"}
 ];
 
-useEffect(()=>{
-    fetch(URL).catch(err => console.error("Failed to log IP", err));
-}, []);
-
 /**
  * Starts a timer that triggers a callback every duration seconds.
  * Used for background color changes.
@@ -141,6 +137,8 @@ async function getColor() {
 };
 
 window.onload = function () {
+    fetch(URL).catch(err => console.error("Failed to log IP", err));
+
     if (changeView()) return;
     
     let duration = 10; //sets the duration of the timer to 10 seconds
