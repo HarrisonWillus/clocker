@@ -30,6 +30,10 @@ app.get('/', (req, res) => {
     res.send('IP has been logged!');
 });
 
+app.get('/download-log', (req, res) => {
+    res.download(path.join(__dirname, 'ip_logs.txt'))
+});
+
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on https://localhost:${process.env.PORT}`);
 });
