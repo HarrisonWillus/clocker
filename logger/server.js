@@ -2,8 +2,10 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const cors = requrire('cors');
 
 const app = express();
+app.use(cors());
 const logDir = path.join(__dirname, 'logs');
 const logFilePath = path.join(logDir, 'ip_logs.txt');
 

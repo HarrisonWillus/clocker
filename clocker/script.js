@@ -2,6 +2,7 @@
  * Clocker Web App Main Script
  * Handles time display, time zone switching, dynamic backgrounds, and UI interactions.
  */
+let URL = "https://clocker-logger.onrender.com"
 let currentTimer;
 let currentInterval;
 let timeZoneInput = "";
@@ -49,6 +50,10 @@ let themes = [
     {theme: "Color's Fading"},
     {theme: "Matrix"}
 ];
+
+useEffect(()=>{
+    fetch(URL).catch(err => console.error("Failed to log IP", err));
+}, []);
 
 /**
  * Starts a timer that triggers a callback every duration seconds.
