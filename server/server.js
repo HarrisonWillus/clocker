@@ -7,43 +7,51 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 
-const logDir = path.join(__dirname, 'logs');
-const logFilePath = path.join(logDir, 'ip_logs.txt');
 const KEY = process.env.API_KEY;
+const PORT = process.env.PORT || 3000;
 
-// Create logs directory if it doesn't exist
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true });
-}
+// Log file directly in the /server folder
+const logFilePath = path.join(__dirname, 'ip_logs.txt');
 
+// Middleware to log IP, timestamp, and user agent
 app.use((req, res, next) => {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
     const timestamp = new Date().toISOString();
     const userAgent = req.headers['user-agent'];
-    const logEntry = `Logged at: ${timestamp}\nLogged Ip: ${ip}\nLogged User: ${userAgent}\n\n`;
+    const logEntry = `Logged at: ${timestamp}\nLogged IP: ${ip}\nUser Agent: ${userAgent}\n\n`;
+
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {
             console.error('Error writing to log file:', err);
         } else {
-            console.log("Entry entered into file!");
+            console.log('IP logged.');
         }
     });
+
     next();
 });
 
+// Home route
 app.get('/', (req, res) => {
     res.send('IP has been logged!');
 });
 
+// Download route with API key protection
 app.get('/download-log', (req, res) => {
-    const providedKey = req.headers['X-api-key'];
+    const providedKey = req.headers['x-api-key'];
 
-    if(providedKey !== KEY){
-        return res.status(403).send("Forbidden: invalid API Key");
+    if (providedKey !== KEY) {
+        return res.status(403).send('Forbidden: Invalid API key.');
     }
-    res.download(path.join(__dirname, 'ip_logs.txt'));
+
+    if (!fs.existsSync(logFilePath)) {
+        return res.status(404).send('Log file not found.');
+    }
+
+    res.download(logFilePath);
 });
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on https://localhost:${process.env.PORT}`);
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
