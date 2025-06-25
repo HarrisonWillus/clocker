@@ -9,6 +9,7 @@ app.use(cors());
 
 const logDir = path.join(__dirname, 'logs');
 const logFilePath = path.join(logDir, 'ip_logs.txt');
+const KEY = process.env.API_KEY;
 
 // Create logs directory if it doesn't exist
 if (!fs.existsSync(logDir)) {
@@ -23,9 +24,10 @@ app.use((req, res, next) => {
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {
             console.error('Error writing to log file:', err);
+        } else {
+            console.log("Entry entered into file!");
         }
     });
-    console.log(`Logged at: ${timestamp}\nLogged Ip: ${ip}\nLogged User: ${userAgent}\n`);
     next();
 });
 
@@ -34,7 +36,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/download-log', (req, res) => {
-    res.download(path.join(__dirname, 'ip_logs.txt'))
+    const providedKey = req.headers['X-api-key'];
+
+    if(providedKey !== KEY){
+        return res.status(403).send("Forbidden: invalid API Key");
+    }
+    res.download(path.join(__dirname, 'ip_logs.txt'));
 });
 
 app.listen(process.env.PORT, () => {
